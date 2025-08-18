@@ -1,157 +1,163 @@
-# streamlit_odd_even_checker.py
-
-# Import the streamlit library so we can build the app
-import streamlit as st
-import pyttsx3
-
-engine = pyttsx3.init()
-
-def speak(text):
-    engine.say(text)
-    engine.runAndWait()
-
-st.title("🔢 Even or Odd Number Checker with Voice (Offline)")
-
-try:
-    number = st.number_input("Enter a number", value=0, step=1)
-
-    if st.button("Check"):
-        result = "Even" if number % 2 == 0 else "Odd"
-        output = f"The number {int(number)} is {result}"
-        st.success(output)
-        speak(output)
-
-except ValueError:
-    st.error("🚫 Please type a valid whole number.")
-
-st.balloons()  # 🎈 for celebration
-st.snow()      # ❄️ just for fun 
-import streamlit as st
-
-# ✅ Initialize session state variable 'history' if it doesn't exist
-if 'history' not in st.session_state:
-    st.session_state.history = []  # ← indented under the 'if'
-
-import streamlit as st
-
-# Custom CSS for blue and black background
-st.markdown("""
-    <style>
-        /* Set background color of the main content */
-        .stApp {
-            background-color: #ADD8E6; /* Light blue */
-        }
-
-        /* Optional: style the sidebar */
-        section[data-testid="stSidebar"] {
-            background-color: black;
-            color: white;
-        }
-
-        /* Optional: style text */
-        .stMarkdown, .stTextInput, .stButton, .stAlert {
-            font-size: 18px;
-        }
-    </style>
-""", unsafe_allow_html=True)
 import streamlit as st
 import random
 
-st.set_page_config(page_title="Mini Game Hub 🎮", layout="centered")
+# ==========================
+# 🔵 Custom Blue Background
+# ==========================
+st.markdown("""
+    <style>
+        .stApp {
+            background-color: #D0E7FF; /* Light blue background */
+        }
+        .stButton > button {
+            background-color: #3399FF;
+            color: white;
+            font-weight: bold;
+        }
+        .stRadio > div {
+            background-color: #E6F2FF;
+            padding: 10px;
+            border-radius: 10px;
+        }
+    </style>
+""", unsafe_allow_html=True)
 
-# Game selection
-game_choice = st.sidebar.selectbox("Choose a Game", [
-    "Number Guessing",
-    "Rock, Paper, Scissors",
-    "Math Quiz",
-    "Word Scramble"
-])
+# ==========================
+# 🎉 App Title and Menu
+# ==========================
+st.title("✨ Fun with Numbers and Games!✨😎")
 
-# Common reset logic
-if st.sidebar.button("🔄 Reset All"):
-    for key in st.session_state.keys():
-        del st.session_state[key]
-    st.rerun()
+# Sidebar menu
+menu = st.sidebar.radio(
+    "Choose a section:",
+    [
+        "Even or Odd Checker",
+        "Guess the Game",
+        "Pick a Number Game",
+        "Rock, Paper, Scissors",
+        "Animal Guessing Game"
+    ]
+)
 
-# ========== 1. NUMBER GUESSING ==========
-elif game_choice == "Guess the Number":
-    st.title("🎯 Guess the Number Game")
-    st.write("I'm thinking of a number between 1 and 10...")
+# ==========================
+# 1. Even or Odd Checker
+# ==========================
+if menu == "Even or Odd Checker":
+    st.header("🔢 Even or Odd Checker")
+    st.write("Enter a number and click the button to check if it's even or odd.")
+    user_input = st.text_input("Type a number:")
 
-    guess = st.number_input("Your guess:", min_value=1, max_value=10, step=1)
+    if st.button("Check Number"):
+        if user_input == "":
+            st.warning("Please type a number!")
+        else:
+            try:
+                number = int(user_input)
+                if number % 2 == 0:
+                    st.success(f"✅ The number {number} is EVEN!")
+                else:
+                    st.info(f"ℹ️ The number {number} is ODD!")
+            except ValueError:
+                st.error("❌ Please enter a valid whole number.")
+
+# ==========================
+# 2. Guess Even or Odd Game
+# ==========================
+elif menu == "Guess the Game":
+    st.header("🎲 Guess the Even or Odd Game")
+    st.write("I'll give you a random number. Can you guess if it's even or odd?")
+
+    if "random_number" not in st.session_state:
+        st.session_state.random_number = random.randint(1, 100)
+
+    guess = st.radio("Your guess:", ["Even", "Odd"])
 
     if st.button("Submit Guess"):
-        if guess == st.session_state.secret_number:
-            st.success("🎉 Correct! You guessed the number!")
-            # Reset for next game
-            st.session_state.secret_number = random.randint(1, 10)
-        else:
-            st.warning("❌ Wrong! Try again.")
+        number = st.session_state.random_number
+        correct = "Even" if number % 2 == 0 else "Odd"
 
-# ========== 2. ROCK PAPER SCISSORS ==========
-elif game_choice == "Rock, Paper, Scissors":
-    st.title("✊🖐✌ Rock, Paper, Scissors")
+        if guess == correct:
+            st.success(f"🎉 You're right! The number was {number}, and it's {correct}.")
+        else:
+            st.error(f"Oops! The number was {number}, and it's {correct}.")
+
+        st.session_state.random_number = random.randint(1, 100)
+
+# ==========================
+# 3. Pick a Number Game
+# ==========================
+elif menu == "Pick a Number Game":
+    st.header("🎯 Pick a Number – Closest to Even Wins")
+    st.write("Pick a number. I'll pick one too. Let's see who gets closer to an even number!")
+
+    user_pick = st.number_input("Pick a number (1 to 100):", min_value=1, max_value=100)
+
+    if st.button("Play"):
+        app_pick = random.randint(1, 100)
+
+        user_diff = abs(user_pick % 2)
+        app_diff = abs(app_pick % 2)
+
+        st.write(f"You picked: {user_pick}")
+        st.write(f"I picked: {app_pick}")
+
+        if user_diff == app_diff:
+            st.info("😐 It's a tie!")
+        elif user_diff < app_diff:
+            st.success("🎉 You win! Your number is closer to even.")
+        else:
+            st.error("😜 I win! My number is closer to even.")
+
+# ==========================
+# 4. Rock, Paper, Scissors
+# ==========================
+elif menu == "Rock, Paper, Scissors":
+    st.header("🪨📄✂️ Rock, Paper, Scissors")
+    st.write("Choose your move and let's see who wins!")
 
     choices = ["Rock", "Paper", "Scissors"]
     user_choice = st.radio("Your choice:", choices)
+
     if st.button("Play RPS"):
-        computer_choice = random.choice(choices)
-        st.write(f"Computer chose: **{computer_choice}**")
+        app_choice = random.choice(choices)
 
-        win_conditions = {
-            ("Rock", "Scissors"),
-            ("Scissors", "Paper"),
-            ("Paper", "Rock"),
-        }
+        st.write(f"🤖 I picked: **{app_choice}**")
+        st.write(f"🧑 You picked: **{user_choice}**")
 
-        if user_choice == computer_choice:
-            st.info("It's a draw!")
-        elif (user_choice, computer_choice) in win_conditions:
-            st.success("You win! 🎉")
+        if user_choice == app_choice:
+            st.info("😄 It's a tie!")
+        elif (
+            (user_choice == "Rock" and app_choice == "Scissors") or
+            (user_choice == "Paper" and app_choice == "Rock") or
+            (user_choice == "Scissors" and app_choice == "Paper")
+        ):
+            st.success("🎉 You win!")
         else:
-            st.error("You lose! 😢")
+            st.error("😜 I win!")
 
-# ========== 3. MATH QUIZ ==========
-elif game_choice == "Math Quiz":
-    st.title("➕ Math Quiz")
+# ==========================
+# 5. Animal Guessing Game
+# ==========================
+elif menu == "Animal Guessing Game":
+    st.header("🐾 Animal Guessing Game")
+    st.write("Can you guess which animal I'm thinking of? Let's try!")
 
-    if "mq_num1" not in st.session_state:
-        st.session_state.mq_num1 = random.randint(1, 20)
-        st.session_state.mq_num2 = random.randint(1, 20)
+    animals = ["Cat", "Dog", "Elephant", "Lion", "Rabbit", "Giraffe", "Zebra"]
 
-    st.write(f"What is {st.session_state.mq_num1} + {st.session_state.mq_num2}?")
-    answer = st.number_input("Your Answer:", key="mq_answer")
+    if "secret_animal" not in st.session_state:
+        st.session_state.secret_animal = random.choice(animals)
 
-    if st.button("Check Answer", key="mq_check"):
-        correct = st.session_state.mq_num1 + st.session_state.mq_num2
-        if answer == correct:
-            st.success("Correct! 🎉")
+    user_guess = st.radio("Your guess:", animals)
+
+    if st.button("Guess Animal"):
+        if user_guess == st.session_state.secret_animal:
+            st.success(f"🎉 Yes! I was thinking of a **{user_guess}**!")
         else:
-            st.error(f"Wrong. The answer was {correct}.")
+            st.error(f"❌ Nope! I was thinking of a **{st.session_state.secret_animal}**.")
 
-        # New question
-        st.session_state.mq_num1 = random.randint(1, 20)
-        st.session_state.mq_num2 = random.randint(1, 20)
+        # Pick a new animal for the next round
+        st.session_state.secret_animal = random.choice(animals)
 
-# ========== 4. WORD SCRAMBLE ==========
-elif game_choice == "Word Scramble":
-    st.title("🔤 Word Scramble")
 
-    words = ["streamlit", "python", "game", "challenge", "code"]
-    if "ws_word" not in st.session_state:
-        st.session_state.ws_word = random.choice(words)
-        st.session_state.ws_scrambled = ''.join(random.sample(st.session_state.ws_word, len(st.session_state.ws_word)))
-
-    st.write(f"Unscramble this word: **{st.session_state.ws_scrambled}**")
-    user_input = st.text_input("Your guess:", key="ws_input")
-
-    if st.button("Submit", key="ws_submit"):
-        if user_input.lower() == st.session_state.ws_word:
-            st.success("Correct! 🎉")
-        else:
-            st.error(f"Wrong! The correct word was **{st.session_state.ws_word}**")
-
-        del st.session_state["ws_word"]
-        del st.session_state["ws_scrambled"]
 
 
