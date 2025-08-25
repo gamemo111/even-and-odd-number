@@ -263,3 +263,4 @@ elif menu == "Math Quiz Game":
             st.warning("⚠️ Please enter a valid number.")
 
     st.info(f"🏆 Your Score: {st.session_state.score}")
+
